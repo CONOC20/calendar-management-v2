@@ -1,0 +1,6 @@
+export const SITE_PROCESS_STATUS_NOT_STARTED = 1;
+export const SITE_PROCESS_STATUS_IN_PROGRESS = 2;
+export const SITE_PROCESS_STATUS_COMPLETED = 3;
+export const SITE_PROCESS_STATUS_UNNECESSARY = 4;
+
+export const DEFAULT_MESSAGE_NO_DATA = 'データがありません';

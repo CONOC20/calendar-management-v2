@@ -1,0 +1,178 @@
+/* グループ週間ビュー（転置版）— 行=メンバー, 列=日付 */
+
+.group-weekly {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* ナビゲーション */
+.group-weekly__nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 8px 0;
+}
+.group-weekly__nav-btn {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+}
+.group-weekly__nav-btn:hover {
+  background: #f0f0f0;
+}
+.group-weekly__nav-title {
+  font-size: 16px;
+  font-weight: 500;
+  min-width: 200px;
+  text-align: center;
+}
+.group-weekly__today-btn {
+  background: #4fc3f7;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+.group-weekly__today-btn:hover {
+  background: #29b6f6;
+}
+
+/* テーブル */
+.group-weekly__table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* ヘッダー左上角（メンバー） */
+.group-weekly__header-corner {
+  background: #4fc3f7;
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 10px 8px;
+  border: 1px solid #b3e5fc;
+  width: 110px;
+  min-width: 110px;
+  text-align: center;
+}
+
+/* ヘッダー（日付列） */
+.group-weekly__header-date {
+  background: #4fc3f7;
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 10px 4px;
+  border: 1px solid #b3e5fc;
+  text-align: center;
+  min-width: 120px;
+}
+.group-weekly__header-date--today {
+  background: #0288d1;
+}
+.group-weekly__header-date--sun {
+  color: #ffcdd2;
+}
+.group-weekly__header-date--sat {
+  color: #bbdefb;
+}
+
+/* メンバー行ヘッダー */
+.group-weekly__member-cell {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  padding: 6px 8px;
+  vertical-align: top;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  width: 110px;
+  min-width: 110px;
+  position: relative;
+}
+.group-weekly__hide-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 3px;
+}
+.group-weekly__hide-btn:hover {
+  color: #333;
+}
+
+/* イベントセル */
+.group-weekly__cell {
+  border: 1px solid #e0e0e0;
+  padding: 4px;
+  vertical-align: top;
+  min-height: 60px;
+  height: 60px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.group-weekly__cell:hover {
+  background: #f5f5f5;
+}
+.group-weekly__cell--today {
+  background: #e3f2fd;
+}
+.group-weekly__cell--today:hover {
+  background: #bbdefb;
+}
+
+/* イベントアイテム */
+.group-weekly__event {
+  border-radius: 3px;
+  padding: 2px 6px;
+  margin-bottom: 2px;
+  font-size: 11px;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.group-weekly__event:hover {
+  opacity: 0.85;
+}
+.group-weekly__event-time {
+  font-size: 10px;
+  opacity: 0.85;
+}
+.group-weekly__event-title {
+  font-weight: 500;
+}
+
+/* 繰り返しアイコン */
+.group-weekly__event--recurring::before {
+  content: '\21BB ';
+  font-size: 10px;
+}
+
+/* もっと見る */
+.group-weekly__more {
+  font-size: 10px;
+  color: #666;
+  cursor: pointer;
+  padding: 1px 4px;
+}
+.group-weekly__more:hover {
+  text-decoration: underline;
+}

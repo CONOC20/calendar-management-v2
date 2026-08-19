@@ -1,0 +1,126 @@
+/* CONOCカレンダー用CSS */
+
+/* 曜日ヘッダー */
+.fc .fc-col-header-cell {
+  background-color: #4fc3f7;
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 6px 0;
+}
+
+/* 日曜 */
+.fc .fc-day-sun .fc-col-header-cell-cushion {
+  color: #fff;
+}
+.fc .fc-daygrid-day.fc-day-sun .fc-daygrid-day-number {
+  color: #e53935;
+}
+
+/* 土曜 */
+.fc .fc-day-sat .fc-col-header-cell-cushion {
+  color: #fff;
+}
+.fc .fc-daygrid-day.fc-day-sat .fc-daygrid-day-number {
+  color: #1565c0;
+}
+
+/* 日付セル */
+.fc .fc-daygrid-day-number {
+  font-size: 14px;
+  padding: 4px 8px;
+}
+
+/* 当月以外の日付 */
+.fc .fc-day-other .fc-daygrid-day-number {
+  color: #bbb;
+}
+
+/* 今日のハイライト */
+.fc .fc-day-today {
+  background-color: #e3f2fd !important;
+}
+
+/* イベントスタイル */
+.fc .fc-event {
+  border: none;
+  border-radius: 3px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.fc .fc-daygrid-event {
+  margin: 1px 4px;
+}
+
+/* 「他X件」リンク */
+.fc .fc-daygrid-more-link {
+  font-size: 12px;
+  color: #666;
+  padding: 2px 6px;
+}
+
+/* 週表示の時間ラベル */
+.fc .fc-timegrid-slot-label {
+  font-size: 12px;
+  color: #666;
+}
+
+/* 週表示の終日エリア */
+.fc .fc-timegrid-axis {
+  font-size: 12px;
+}
+
+/* 現在時刻インジケータ */
+.fc .fc-timegrid-now-indicator-line {
+  border-color: #e53935;
+  border-width: 2px;
+}
+.fc .fc-timegrid-now-indicator-arrow {
+  border-color: #e53935;
+}
+
+/* ツールバー非表示（カスタムツールバー使用） */
+.fc .fc-toolbar.fc-header-toolbar {
+  display: none;
+}
+
+/* セルのホバー */
+.fc .fc-daygrid-day:hover {
+  background-color: #f5f5f5;
+}
+
+/* 土日のセル背景（ヘッダーは除外） */
+.fc .fc-daygrid-day.fc-day-sat,
+.fc .fc-daygrid-day.fc-day-sun {
+  background-color: #fafafa;
+}
+
+/* 土日のヘッダーは青を維持 */
+.fc .fc-col-header-cell.fc-day-sat,
+.fc .fc-col-header-cell.fc-day-sun {
+  background-color: #4fc3f7 !important;
+}
+
+/* 週表示の土日背景 */
+.fc .fc-timegrid .fc-day-sat,
+.fc .fc-timegrid .fc-day-sun {
+  background-color: #fafafa;
+}
+
+/* セルの高さ */
+.fc .fc-daygrid-day-frame {
+  min-height: 100px;
+}
+
+/* 7列均等配分 */
+.fc .fc-scrollgrid {
+  width: 100%;
+}
+.fc .fc-col-header {
+  width: 100%;
+}
+.fc .fc-col-header-cell {
+  width: 14.28%;
+}
+

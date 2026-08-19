@@ -1,0 +1,192 @@
+/* グループ日ビュー（転置版）— 行=メンバー, 列=時間 */
+
+.group-daily {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* ナビゲーション */
+.group-daily__nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 8px 0;
+}
+.group-daily__nav-btn {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+}
+.group-daily__nav-btn:hover {
+  background: #f0f0f0;
+}
+.group-daily__nav-title {
+  font-size: 18px;
+  font-weight: 600;
+  min-width: 240px;
+  text-align: center;
+}
+.group-daily__nav-title--sun {
+  color: #e53935;
+}
+.group-daily__nav-title--sat {
+  color: #1565c0;
+}
+.group-daily__today-btn {
+  background: #4fc3f7;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+.group-daily__today-btn:hover {
+  background: #29b6f6;
+}
+
+/* テーブル */
+.group-daily__table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* ヘッダー左上角 */
+.group-daily__header-corner {
+  background: #4fc3f7;
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 10px 4px;
+  border: 1px solid #b3e5fc;
+  width: 90px;
+  min-width: 90px;
+  text-align: center;
+}
+
+/* ヘッダー（時間列） */
+.group-daily__header-hour {
+  background: #4fc3f7;
+  color: #fff;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 10px 2px;
+  border: 1px solid #b3e5fc;
+  text-align: center;
+  min-width: 70px;
+}
+.group-daily__header-hour--allday {
+  min-width: 80px;
+  width: 80px;
+}
+
+/* メンバー行ヘッダー */
+.group-daily__member-cell {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  padding: 6px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  width: 90px;
+  min-width: 90px;
+  vertical-align: top;
+  position: relative;
+}
+.group-daily__hide-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 3px;
+}
+.group-daily__hide-btn:hover {
+  color: #333;
+}
+
+/* イベントセル */
+.group-daily__cell {
+  border: 1px solid #e0e0e0;
+  padding: 2px;
+  vertical-align: top;
+  height: 54px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s;
+  overflow: visible;
+}
+.group-daily__cell:hover {
+  background: #f5f5f5;
+}
+.group-daily__cell--today {
+  background: #f0f8ff;
+}
+.group-daily__cell--today:hover {
+  background: #e3f2fd;
+}
+.group-daily__cell--occupied {
+  /* 跨がるイベントがあるスロット */
+}
+
+/* イベント共通 */
+.group-daily__event {
+  border-radius: 3px;
+  padding: 3px 6px;
+  font-size: 11px;
+  line-height: 1.3;
+  cursor: pointer;
+  overflow: hidden;
+  transition: opacity 0.15s;
+}
+.group-daily__event:hover {
+  opacity: 0.85;
+}
+
+/* 時間指定イベント（横にスパン） */
+.group-daily__event--timed {
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  bottom: 2px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* 終日イベント */
+.group-daily__event--allday {
+  margin-bottom: 2px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.group-daily__event-time {
+  font-size: 10px;
+  opacity: 0.9;
+  font-weight: 600;
+}
+.group-daily__event-title {
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+/* 繰り返しアイコン */
+.group-daily__event--recurring .group-daily__event-title::before {
+  content: '\21BB ';
+  font-size: 10px;
+}
