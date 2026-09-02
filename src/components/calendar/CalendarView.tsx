@@ -9,9 +9,12 @@ import {
   makeStyles, createStyles, Select, MenuItem, Typography, Tabs, Tab,
   Button, Popover, FormControlLabel, Checkbox, FormGroup
 } from '@material-ui/core';
-import { mockEvents, TCalendarEvent, expandRecurringEvents, PARTICIPANT_LIST } from '../../data/mockData';
+import { mockEvents, TCalendarEvent, expandRecurringEvents, PARTICIPANT_LIST, getChipByName, getTypeLabel } from '../../data/mockData';
 import { EventFormModal } from './EventFormModal';
 import { GroupWeeklyView } from './GroupWeeklyView';
+import {
+  SCHEDULE_ITEMS, SOURCE_LABELS, TScheduleSource, TScheduleItem, findConstruct,
+} from '../../data/scheduleLayer';
 import { GroupDailyView } from './GroupDailyView';
 import './calendarView.css';
 
@@ -177,6 +180,28 @@ export const CalendarView: React.FC = () => {
     return new Set(PARTICIPANT_LIST);
   });
   const [memberAnchor, setMemberAnchor] = useState<HTMLElement | null>(null);
+
+  // 共通期日レイヤーのどれを重ねるか。既定は工程と工事の期日だけ出す
+  const [visibleSources, setVisibleSources] = useState<Set<TScheduleSource>>(
+    () => new Set<TScheduleSource>(['process', 'construct_due']),
+  );
+  const [sourceAnchor, setSourceAnchor] = useState<HTMLElement | null>(null);
+
+  const toggleSource = (src: TScheduleSource) => {
+    const next = new Set(visibleSources);
+    next.has(src) ? next.delete(src) : next.add(src);
+    setVisibleSources(next);
+  };
+
+  // 読み取り専用なのでカレンダー上では編集させず、案件詳細へ送る
+  const handleScheduleClick = useCallback((item: TScheduleItem) => {
+    const c = findConstruct(item.constructId);
+    window.alert(
+      `${item.title}\n\n案件: ${c?.name ?? '—'}\n担当: ${item.charge ?? '担当なし'}\n` +
+      `期間: ${item.start}${item.hasDuration ? ` 〜 ${item.end}` : ''}\n\n` +
+      `カレンダーからは編集できません。案件詳細（${c?.path ?? '—'}）へ移動します。`,
+    );
+  }, []);
 
   // モーダル
   const [modalOpen, setModalOpen] = useState(false);
@@ -358,6 +383,46 @@ export const CalendarView: React.FC = () => {
               メンバー ({visibleMembers.size}/{PARTICIPANT_LIST.length})
             </Button>
           )}
+          {activeTab === 'group' && (
+            <Button
+              className={classes.memberBtn}
+              onClick={(e) => setSourceAnchor(e.currentTarget)}
+            >
+              重ねる ({visibleSources.size}/4)
+            </Button>
+          )}
+          <Popover
+            open={Boolean(sourceAnchor)}
+            anchorEl={sourceAnchor}
+            onClose={() => setSourceAnchor(null)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          >
+            <div className={classes.memberPopover}>
+              <div style={{ fontSize: 12, color: '#666', marginBottom: 6 }}>
+                カレンダーに重ねるもの
+              </div>
+              <FormGroup>
+                {(Object.keys(SOURCE_LABELS) as TScheduleSource[]).map(src => (
+                  <FormControlLabel
+                    key={src}
+                    control={
+                      <Checkbox
+                        checked={visibleSources.has(src)}
+                        onChange={() => toggleSource(src)}
+                        size="small"
+                        style={{ color: '#0099CC' }}
+                      />
+                    }
+                    label={<span style={{ fontSize: 13 }}>{SOURCE_LABELS[src]}</span>}
+                  />
+                ))}
+              </FormGroup>
+              <div style={{ fontSize: 11, color: '#888', marginTop: 6, lineHeight: 1.6 }}>
+                これらは工程表・工事から読むだけで、<br />
+                カレンダーからは編集できません。
+              </div>
+            </div>
+          </Popover>
           <Popover
             open={Boolean(memberAnchor)}
             anchorEl={memberAnchor}
@@ -416,7 +481,10 @@ export const CalendarView: React.FC = () => {
           dayHeaderFormat={{ weekday: 'short' }}
           height="auto"
           contentHeight="auto"
-          dayMaxEvents={3}
+          dayMaxEvents={false}
+          displayEventEnd={true}
+          defaultRangeSeparator="-"
+          eventTimeFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
           moreLinkText={(n) => `他${n}件`}
           nowIndicator={true}
           selectable={true}
@@ -449,34 +517,64 @@ export const CalendarView: React.FC = () => {
             const isRecurring = arg.event.extendedProps?.recurrenceParentId ||
               (arg.event.extendedProps?.recurrence?.type && arg.event.extendedProps.recurrence.type !== 'none');
 
+            const cn = arg.event.extendedProps?.colorName ?? '青';
+            const chip = getChipByName(cn);
+            // 色だけでは意味が伝わらないので、種別名を白文字のバッジで添える
+            const Chip = () => (
+              <span style={{
+                display: 'inline-block', flex: '0 0 auto',
+                backgroundColor: chip, color: '#fff',
+                fontSize: 9.5, lineHeight: '13px', padding: '0 4px',
+                borderRadius: 2, marginRight: 4, whiteSpace: 'nowrap',
+              }}>{getTypeLabel(cn)}</span>
+            );
+
             if (view === 'dayGridMonth') {
               return (
                 <div style={{
-                  padding: '2px 6px',
-                  fontSize: 12,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  borderRadius: 2,
+                  padding: '1px 5px',
+                  fontSize: 11.5,
+                  lineHeight: 1.45,
+                  color: '#333',
+                  borderRadius: 3,
+                  whiteSpace: 'normal',
+                  wordBreak: 'break-word',
                 }}>
-                  {isRecurring && <span style={{ fontSize: 10 }}>&#x21BB; </span>}
-                  {arg.event.title}
+                  {arg.timeText && (
+                    <div style={{ fontSize: 11, fontWeight: 600, color: '#444' }}>
+                      {arg.timeText}
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                    <Chip />
+                    <span>
+                      {isRecurring && <span style={{ fontSize: 10, color: '#888' }}>&#x21BB; </span>}
+                      {arg.event.title}
+                    </span>
+                  </div>
                 </div>
               );
             }
             // 週・日表示
             return (
               <div style={{
-                padding: '4px 8px',
-                fontSize: 12,
+                padding: '3px 6px',
+                fontSize: 11.5,
+                lineHeight: 1.5,
+                color: '#333',
                 overflow: 'hidden',
               }}>
-                <div style={{ fontWeight: 500 }}>
-                  {isRecurring && <span style={{ fontSize: 10 }}>&#x21BB; </span>}
-                  {arg.event.title}
-                </div>
-                <div style={{ fontSize: 11, opacity: 0.8 }}>
-                  {arg.timeText}
+                {arg.timeText && (
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#444', marginBottom: 1 }}>
+                    {arg.timeText}
+                  </div>
+                )}
+                <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                  <Chip />
+                  <span>
+                    {isRecurring && <span style={{ fontSize: 10, color: '#888' }}>&#x21BB; </span>}
+                    {arg.event.title}
+                  </span>
                 </div>
               </div>
             );
@@ -488,6 +586,9 @@ export const CalendarView: React.FC = () => {
       {viewType === 'groupWeekly' && (
         <GroupWeeklyView
           events={expandedEvents}
+          scheduleItems={SCHEDULE_ITEMS as TScheduleItem[]}
+          visibleSources={visibleSources}
+          onScheduleClick={handleScheduleClick}
           weekStart={groupWeekStart}
           onPrevWeek={() => {
             const prev = new Date(groupWeekStart);

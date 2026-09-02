@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react';
-import { TCalendarEvent, PARTICIPANT_LIST } from '../../data/mockData';
+import { TCalendarEvent, PARTICIPANT_LIST, getChipByName, getTypeLabel } from '../../data/mockData';
+import { TScheduleItem, TScheduleSource } from '../../data/scheduleLayer';
+import { ScheduleBar } from './ScheduleBar';
 import './groupWeeklyView.css';
 
 type TProps = {
@@ -12,10 +14,20 @@ type TProps = {
   onCellClick: (date: string, member: string) => void;
   visibleMembers?: string[];
   onMemberHide?: (member: string) => void;
+  /** 共通期日レイヤーの項目。カレンダーは読むだけで色も持たない */
+  scheduleItems?: TScheduleItem[];
+  /** 表示する供給元。空なら何も重ねない */
+  visibleSources?: Set<TScheduleSource>;
+  onScheduleClick?: (item: TScheduleItem) => void;
 };
 
 const DAYS = ['日', '月', '火', '水', '木', '金', '土'];
-const MAX_EVENTS_PER_CELL = 3;
+/**
+ * 1セルに出す件数の上限。
+ * 開かないと中身が読めない状態にしないため、既定では畳まずに全部出す。
+ * セルは件数に応じて縦に伸びる。
+ */
+const MAX_EVENTS_PER_CELL = 20;
 
 const fmtDate = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -58,6 +70,9 @@ export const GroupWeeklyView: React.FC<TProps> = ({
   onCellClick,
   visibleMembers,
   onMemberHide,
+  scheduleItems = [],
+  visibleSources,
+  onScheduleClick,
 }) => {
   const todayStr = fmtDate(new Date());
 
@@ -72,6 +87,52 @@ export const GroupWeeklyView: React.FC<TProps> = ({
   }, [weekStart]);
 
   const members = visibleMembers ?? PARTICIPANT_LIST;
+
+  const shownItems = useMemo(
+    () => (visibleSources ? scheduleItems.filter(i => visibleSources.has(i.source)) : []),
+    [scheduleItems, visibleSources],
+  );
+
+  const weekStrs = useMemo(() => weekDates.map(fmtDate), [weekDates]);
+
+  /** 週内での [開始列, 終了列] を返す。週の外にはみ出す分は週端で切る */
+  const spanRange = (item: TScheduleItem): [number, number] | null => {
+    const s0 = weekStrs.findIndex(d => d >= item.start);
+    const e0 = [...weekStrs].reverse().findIndex(d => d <= item.end);
+    if (item.end < weekStrs[0] || item.start > weekStrs[6]) return null;
+    const from = s0 === -1 ? 0 : s0;
+    const to = e0 === -1 ? 6 : 6 - e0;
+    return from <= to ? [from, to] : null;
+  };
+
+  /** 期間を持つもの＝専用行。持たないもの＝その日のセルへ */
+  const spansOf = (charge: string | null) =>
+    shownItems.filter(i => i.hasDuration && i.charge === charge && spanRange(i));
+  const pointsOn = (charge: string | null, dateStr: string) =>
+    shownItems.filter(i => !i.hasDuration && i.charge === charge && i.start === dateStr);
+
+  /** 期間バーを1行として描く。列をまたぐので colSpan を使う */
+  const renderSpanRow = (item: TScheduleItem, key: string, label: string) => {
+    const r = spanRange(item);
+    if (!r) return null;
+    const [from, to] = r;
+    const cells: React.ReactNode[] = [];
+    if (from > 0) cells.push(<td key="pre" colSpan={from} />);
+    cells.push(
+      <td key="bar" colSpan={to - from + 1}>
+        <ScheduleBar item={item} span onClick={onScheduleClick} />
+      </td>,
+    );
+    if (to < 6) cells.push(<td key="post" colSpan={6 - to} />);
+    return (
+      <tr key={key} className="group-weekly__span-row">
+        <td className="group-weekly__span-label">{label}</td>
+        {cells}
+      </tr>
+    );
+  };
+
+  const orgSpans = spansOf(null);
 
   return (
     <div className="group-weekly">
@@ -114,8 +175,27 @@ export const GroupWeeklyView: React.FC<TProps> = ({
             </tr>
           </thead>
           <tbody>
+            {/* 担当を持たない工事の期日・資材はメンバー行に置けないので全体行に出す */}
+            {(orgSpans.length > 0 || weekStrs.some(d => pointsOn(null, d).length > 0)) && (
+              <tr className="group-weekly__org-row">
+                <td className="group-weekly__org-label">全体</td>
+                {weekDates.map((date) => {
+                  const dateStr = fmtDate(date);
+                  return (
+                    <td key={dateStr} className="group-weekly__cell">
+                      {pointsOn(null, dateStr).map(i => (
+                        <ScheduleBar key={i.id} item={i} onClick={onScheduleClick} />
+                      ))}
+                    </td>
+                  );
+                })}
+              </tr>
+            )}
+            {orgSpans.map(i => renderSpanRow(i, `org-${i.id}`, ''))}
+
             {members.map((member) => (
-              <tr key={member}>
+              <React.Fragment key={member}>
+              <tr>
                 <td className="group-weekly__member-cell">
                   <span>{member}</span>
                   {onMemberHide && (
@@ -145,18 +225,18 @@ export const GroupWeeklyView: React.FC<TProps> = ({
                       onClick={() => onCellClick(dateStr, member)}
                     >
                       {shown.map((ev) => {
-                        const timeStr = ev.start.includes('T')
-                          ? ev.start.split('T')[1].substring(0, 5)
-                          : '';
+                        const hhmm = (v?: string) =>
+                          v && v.includes('T') ? v.split('T')[1].substring(0, 5) : '';
+                        const st = hhmm(ev.start);
+                        const en = hhmm(ev.end);
+                        // 開始だけだと「何時から何時まで」が読めない。終了があれば範囲で出す
+                        const timeStr = st ? (en && en !== st ? `${st}-${en}` : st) : '';
                         const isRecurring = !!ev.recurrenceParentId || (ev.recurrence && ev.recurrence.type !== 'none');
                         return (
                           <div
                             key={ev.id}
-                            className={`group-weekly__event ${isRecurring ? 'group-weekly__event--recurring' : ''}`}
-                            style={{
-                              backgroundColor: ev.backgroundColor || '#64b5f6',
-                              color: ev.textColor || '#fff',
-                            }}
+                            className="group-weekly__event"
+                            style={{ backgroundColor: ev.backgroundColor || '#D1EDF6' }}
                             onClick={(e) => {
                               e.stopPropagation();
                               onEventClick(ev);
@@ -165,11 +245,22 @@ export const GroupWeeklyView: React.FC<TProps> = ({
                           >
                             {timeStr && (
                               <span className="group-weekly__event-time">
-                                {timeStr}{' '}
+                                {timeStr}
                               </span>
                             )}
-                            <span className="group-weekly__event-title">
-                              {ev.title}
+                            <span className="group-weekly__event-body">
+                              <span
+                                className="group-weekly__badge"
+                                style={{ backgroundColor: getChipByName(ev.extendedProps.colorName) }}
+                              >
+                                {getTypeLabel(ev.extendedProps.colorName)}
+                              </span>
+                              <span className="group-weekly__event-title">
+                                {ev.title}
+                                {isRecurring && (
+                                  <span className="group-weekly__repeat" title="繰り返し予定">&#x21BB;</span>
+                                )}
+                              </span>
                             </span>
                           </div>
                         );
@@ -179,10 +270,16 @@ export const GroupWeeklyView: React.FC<TProps> = ({
                           他{overflow}件
                         </div>
                       )}
+                      {pointsOn(member, dateStr).map(i => (
+                        <ScheduleBar key={i.id} item={i} onClick={onScheduleClick} />
+                      ))}
                     </td>
                   );
                 })}
               </tr>
+              {/* 期間を持つ工程は時刻あり予定と別行に分ける。本数だけ行が増える */}
+              {spansOf(member).map(i => renderSpanRow(i, `${member}-${i.id}`, ''))}
+              </React.Fragment>
             ))}
           </tbody>
         </table>

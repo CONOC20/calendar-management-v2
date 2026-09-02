@@ -1,3 +1,5 @@
+import { PALETTE, findColor, TEXT_COLOR } from './palette';
+
 // ダミーイベントデータ
 const today = new Date();
 const y = today.getFullYear();
@@ -37,22 +39,33 @@ export type TCalendarEvent = {
   };
 };
 
-// colorNameから色情報を取得するヘルパー
-export const getColorByName = (colorName: string) => {
-  const c = COLOR_OPTIONS.find(o => o.name === colorName);
-  const bg = c?.value || COLOR_OPTIONS[0].value;
-  // 黄色は黒テキスト、それ以外は白テキスト
-  const text = colorName === '黄色' ? '#333' : '#fff';
-  return { bg, text };
+/**
+ * 予定の色名と工程表のパレットの対応。
+ * 面積の大きい塗りは pale、識別は base のチップが担う。
+ * 濃い色で塗ると文字が読めず、画面内に濃淡2系統が混ざると散らかって見える。
+ */
+const COLOR_NAME_TO_PALETTE: Record<string, number> = {
+  '赤': 1, '黄色': 3, '緑': 4, '青': 6, '紫': 8,
 };
 
-export const COLOR_OPTIONS = [
-  { name: '赤', value: '#e57373' },
-  { name: '黄色', value: '#ffd54f' },
-  { name: '緑', value: '#81c784' },
-  { name: '青', value: '#64b5f6' },
-  { name: '紫', value: '#ba68c8' },
-];
+/**
+ * 予定種別の表示名。バッジに出す。
+ * 色だけだと意味が人によって変わるので、必ず名前を伴わせる。
+ */
+const COLOR_NAME_TO_TYPE: Record<string, string> = {
+  '青': '打合せ', '緑': '現場', '赤': '検査', '黄色': '発注', '紫': '会議',
+};
+export const getTypeLabel = (colorName: string) => COLOR_NAME_TO_TYPE[colorName] ?? '予定';
+
+export const getColorByName = (colorName: string) => {
+  const id = COLOR_NAME_TO_PALETTE[colorName] ?? 6;
+  const c = findColor(id)!;
+  return { bg: c.pale, chip: c.base, text: TEXT_COLOR };
+};
+
+export const COLOR_OPTIONS = PALETTE
+  .filter(c => Object.values(COLOR_NAME_TO_PALETTE).includes(c.id))
+  .map(c => ({ name: Object.keys(COLOR_NAME_TO_PALETTE).find(k => COLOR_NAME_TO_PALETTE[k] === c.id)!, value: c.pale, chip: c.base }));
 
 export const PARTICIPANT_LIST = [
   '山田', '佐藤(事務)', '田中', '鈴木(事務)', '小林',
@@ -64,6 +77,9 @@ const ev = (data: Omit<TCalendarEvent, 'backgroundColor' | 'borderColor' | 'text
   const { bg, text } = getColorByName(data.extendedProps.colorName);
   return { ...data, backgroundColor: bg, borderColor: bg, textColor: text };
 };
+
+/** 予定の識別に使う濃い色。塗りは薄いので、これが無いと種別が見分けられない */
+export const getChipByName = (colorName: string) => getColorByName(colorName).chip;
 
 /** 繰り返し予定を展開する */
 export const expandRecurringEvents = (events: TCalendarEvent[]): TCalendarEvent[] => {
