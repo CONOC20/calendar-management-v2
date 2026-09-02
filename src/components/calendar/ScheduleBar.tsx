@@ -29,6 +29,7 @@ export const ScheduleBar: React.FC<TProps> = ({ item, span = false, onClick }) =
   return (
     <div
       className={span ? 'schedule-bar schedule-bar--span' : 'schedule-bar'}
+      data-tour="schedule-item"
       style={{ backgroundColor: fill, color: TEXT_COLOR }}
       onClick={(e) => { e.stopPropagation(); onClick?.(item); }}
       title={`${item.title}（${item.charge ?? '担当なし'}）`}

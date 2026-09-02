@@ -126,7 +126,7 @@ export const GroupWeeklyView: React.FC<TProps> = ({
     );
     if (to < 6) cells.push(<td key="post" colSpan={6 - to} />);
     return (
-      <tr key={key} className="group-weekly__span-row">
+      <tr key={key} className="group-weekly__span-row" data-tour="span-row">
         <td className="group-weekly__span-label">{label}</td>
         {cells}
       </tr>
@@ -170,6 +170,7 @@ export const GroupWeeklyView: React.FC<TProps> = ({
                 const hol = findHoliday(dateStr);
                 return (
                   <th key={dateStr} className={cls}
+                      data-tour={hol ? 'holiday' : undefined}
                       style={{ backgroundColor: holidayBg(dateStr, dayIdx) ?? undefined }}>
                     {date.getMonth() + 1}/{date.getDate()}（{DAYS[dayIdx]}）
                     {hol && <div className="group-weekly__holiday">{hol.name}</div>}
@@ -181,7 +182,7 @@ export const GroupWeeklyView: React.FC<TProps> = ({
           <tbody>
             {/* 担当を持たない工事の期日・資材はメンバー行に置けないので全体行に出す */}
             {(orgSpans.length > 0 || weekStrs.some(d => pointsOn(null, d).length > 0)) && (
-              <tr className="group-weekly__org-row">
+              <tr className="group-weekly__org-row" data-tour="org-row">
                 <td className="group-weekly__org-label">全体</td>
                 {weekDates.map((date) => {
                   const dateStr = fmtDate(date);

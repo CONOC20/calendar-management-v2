@@ -12,6 +12,7 @@ import {
 import { mockEvents, TCalendarEvent, expandRecurringEvents, PARTICIPANT_LIST, getChipByName, getTypeLabel } from '../../data/mockData';
 import { EventFormModal } from './EventFormModal';
 import { GroupWeeklyView } from './GroupWeeklyView';
+import { ProductTour, TTourStep } from './ProductTour';
 import {
   SCHEDULE_ITEMS, SOURCE_LABELS, TScheduleSource, TScheduleItem, findConstruct,
 } from '../../data/scheduleLayer';
@@ -187,6 +188,52 @@ export const CalendarView: React.FC = () => {
   );
   const [sourceAnchor, setSourceAnchor] = useState<HTMLElement | null>(null);
 
+  const tourSteps: TTourStep[] = [
+    {
+      target: '[data-tour="tabs"]', tab: 'group',
+      title: '2つの見かたを切り替えます',
+      body: '「個人」は自分の予定を時間軸で、「グループ」はメンバー全員の予定を横並びで見ます。\n段取りを決めるときはグループ、自分の1日を確認するときは個人が向いています。',
+    },
+    {
+      target: '[data-tour="overlay-filter"]', tab: 'group',
+      title: 'カレンダーに重ねるものを選びます',
+      body: '担当工程・段取りタスク・工事の期日・資材の発注納品を、それぞれ出し入れできます。\nこれらは工程表や工事から読んでいるので、二重に入力する必要はありません。',
+    },
+    {
+      target: '[data-tour="span-row"]', tab: 'group',
+      title: '工程は担当者ごとの専用行に出ます',
+      body: '複数日にまたがる工程は、時刻のある予定とは別の行に横向きのバーで出ます。\n打合せが増えても工程が押し出されないので、誰がいつ現場に入るかが常に見えます。',
+    },
+    {
+      target: '[data-tour="org-row"]', tab: 'group',
+      title: '担当者がいない期日は「全体」行へ',
+      body: '着工予定日・検査日・入金予定日・資材の納品日など、特定の担当者に紐づかない期日はここに出ます。\n工程が登録されていない工事でも、これらは表示されます。',
+    },
+    {
+      target: '[data-tour="holiday"]', tab: 'group',
+      title: '休日は列の色で分かります',
+      body: '土日祝に加えて、夏季休業や創立記念日といった自社の休日も色が付きます。\n予定や工程は色の上に重なって表示されるので、休日でも内容は隠れません。',
+    },
+    {
+      target: '[data-tour="schedule-item"]', tab: 'group',
+      title: '工程や期日はここでは編集しません',
+      body: 'クリックすると案件の詳細へ移動します。\n日付を直すのは工程表や工事の画面で、カレンダーは見るための場所です。',
+    },
+    {
+      target: null,
+      title: '以上です',
+      body: '右下の「使い方を見る」から、いつでもこの説明をやり直せます。',
+    },
+  ];
+
+  const handleTourTab = useCallback((t: 'personal' | 'group') => {
+    setActiveTab(prev => {
+      if (prev === t) return prev;
+      setViewType(t === 'group' ? 'groupWeekly' : 'dayGridMonth');
+      return t;
+    });
+  }, []);
+
   const toggleSource = (src: TScheduleSource) => {
     const next = new Set(visibleSources);
     next.has(src) ? next.delete(src) : next.add(src);
@@ -355,8 +402,11 @@ export const CalendarView: React.FC = () => {
           </Typography>
         )}
 
-        <div className={classes.tabRow}>
+        <ProductTour steps={tourSteps} onRequestTab={handleTourTab} />
+
+      <div className={classes.tabRow}>
           <Tabs
+            data-tour="tabs"
             value={activeTab === 'personal' ? 0 : 1}
             onChange={handleTabChange}
             className={classes.tabs}
@@ -386,6 +436,7 @@ export const CalendarView: React.FC = () => {
           {activeTab === 'group' && (
             <Button
               className={classes.memberBtn}
+              data-tour="overlay-filter"
               onClick={(e) => setSourceAnchor(e.currentTarget)}
             >
               重ねる ({visibleSources.size}/4)
