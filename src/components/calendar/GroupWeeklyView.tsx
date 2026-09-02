@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { TCalendarEvent, PARTICIPANT_LIST, getChipByName, getTypeLabel } from '../../data/mockData';
 import { TScheduleItem, TScheduleSource } from '../../data/scheduleLayer';
 import { ScheduleBar } from './ScheduleBar';
+import { findHoliday, holidayBg } from '../../data/holidays';
 import './groupWeeklyView.css';
 
 type TProps = {
@@ -166,9 +167,12 @@ export const GroupWeeklyView: React.FC<TProps> = ({
                   dayIdx === 0 ? 'group-weekly__header-date--sun' : '',
                   dayIdx === 6 ? 'group-weekly__header-date--sat' : '',
                 ].filter(Boolean).join(' ');
+                const hol = findHoliday(dateStr);
                 return (
-                  <th key={dateStr} className={cls}>
+                  <th key={dateStr} className={cls}
+                      style={{ backgroundColor: holidayBg(dateStr, dayIdx) ?? undefined }}>
                     {date.getMonth() + 1}/{date.getDate()}（{DAYS[dayIdx]}）
+                    {hol && <div className="group-weekly__holiday">{hol.name}</div>}
                   </th>
                 );
               })}
@@ -215,6 +219,8 @@ export const GroupWeeklyView: React.FC<TProps> = ({
                   const cellClass = isToday
                     ? 'group-weekly__cell group-weekly__cell--today'
                     : 'group-weekly__cell';
+                  // 休日は背景色で示す。予定や工程は帯で重なるので互いを隠さない
+                  const bg = isToday ? undefined : (holidayBg(dateStr, date.getDay()) ?? undefined);
                   const shown = memberEvents.slice(0, MAX_EVENTS_PER_CELL);
                   const overflow = memberEvents.length - MAX_EVENTS_PER_CELL;
 
@@ -222,6 +228,7 @@ export const GroupWeeklyView: React.FC<TProps> = ({
                     <td
                       key={dateStr}
                       className={cellClass}
+                      style={{ backgroundColor: bg }}
                       onClick={() => onCellClick(dateStr, member)}
                     >
                       {shown.map((ev) => {

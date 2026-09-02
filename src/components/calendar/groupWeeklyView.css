@@ -367,3 +367,13 @@
   font-size: 9px;
   color: #AAA;
 }
+
+/* 休日名はヘッダの日付の下に小さく添える。
+   セル本体は予定と工程のために空けておく */
+.group-weekly__holiday {
+  font-size: 10px;
+  font-weight: 400;
+  color: #C0392B;
+  line-height: 1.3;
+  margin-top: 1px;
+}
