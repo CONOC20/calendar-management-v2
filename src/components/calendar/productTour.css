@@ -1,0 +1,59 @@
+.tour { position: fixed; inset: 0; z-index: 3000; pointer-events: none; }
+
+/* 対象の周囲だけを覆う。対象そのものは覆わないので下の画面が読める */
+.tour__mask {
+  position: fixed;
+  background: rgba(17, 24, 32, 0.55);
+  pointer-events: auto;
+}
+.tour__ring {
+  position: fixed;
+  border: 2px solid #0099CC;
+  border-radius: 4px;
+  box-shadow: 0 0 0 3px rgba(0, 153, 204, 0.25);
+  pointer-events: none;
+}
+
+.tour__panel {
+  position: fixed;
+  width: 360px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+  padding: 16px 18px 14px;
+  pointer-events: auto;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #333;
+}
+.tour__count { font-size: 11px; color: #999; letter-spacing: 0.5px; }
+.tour__title { font-size: 15px; font-weight: 700; color: #0F1720; margin: 2px 0 6px; }
+.tour__body { color: #444; white-space: pre-line; }
+.tour__actions {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 14px;
+}
+.tour__nav { display: flex; gap: 8px; }
+.tour__skip {
+  background: none; border: none; color: #888; font-size: 12px; cursor: pointer; padding: 6px 2px;
+}
+.tour__skip:hover { color: #555; text-decoration: underline; }
+.tour__btn {
+  border: 1px solid #D5DBE0; background: #fff; color: #333;
+  border-radius: 4px; padding: 6px 14px; font-size: 13px; cursor: pointer;
+}
+.tour__btn:hover { background: #F5F7F9; }
+.tour__btn--primary { background: #0099CC; border-color: #0099CC; color: #fff; }
+.tour__btn--primary:hover { background: #0086B3; }
+
+.tour__launch {
+  position: fixed; right: 20px; bottom: 20px; z-index: 2000;
+  background: #0099CC; color: #fff; border: none;
+  border-radius: 20px; padding: 9px 18px; font-size: 13px; cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+.tour__launch:hover { background: #0086B3; }
+
+@media (max-width: 480px) {
+  .tour__panel { width: calc(100vw - 24px); left: 12px !important; }
+}

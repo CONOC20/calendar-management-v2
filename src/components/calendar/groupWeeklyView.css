@@ -176,3 +176,204 @@
 .group-weekly__more:hover {
   text-decoration: underline;
 }
+
+/* ── 共通期日レイヤー ───────────────────────── */
+.schedule-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 4px;
+  margin-bottom: 2px;
+  border-radius: 3px;
+  font-size: 11px;
+  line-height: 1.5;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.schedule-bar--span { margin: 2px 0; }
+/* 薄い塗りは10色を並べると見分けられない。識別はこのチップが担う */
+.schedule-bar__chip {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.schedule-bar__title { overflow: hidden; text-overflow: ellipsis; }
+
+/* 期間予定は時刻あり予定と別の行に分ける。時刻あり予定の件数に押し出されないため */
+.group-weekly__span-row td { padding: 1px 2px; vertical-align: middle; }
+.group-weekly__span-label {
+  font-size: 11px;
+  color: #888;
+  padding-left: 8px;
+  white-space: nowrap;
+}
+.group-weekly__org-row td { background: #FAFAFA; }
+.group-weekly__org-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  padding-left: 8px;
+}
+
+
+/* ── 見た目の統一 ─────────────────────────
+   予定・工程・期日をすべて「薄い塗り＋丸チップ＋黒文字」で描く。
+   濃い塗りと薄い塗りが混ざると画面が散らかって見える。 */
+.group-weekly__event {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 4px !important;
+  margin-bottom: 2px !important;
+  border-radius: 3px !important;
+  font-size: 11px !important;
+  line-height: 1.5 !important;
+  color: #333 !important;
+  border: none !important;
+  box-shadow: none !important;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.group-weekly__event-chip {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.group-weekly__event-time {
+  flex: 0 0 auto;
+  font-size: 10px;
+  color: #777;
+  font-variant-numeric: tabular-nums;
+}
+.group-weekly__event-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #333;
+}
+.group-weekly__event:hover { filter: brightness(0.97); }
+
+/* 罫線を薄くして、色より情報が立つようにする */
+.group-weekly__table td,
+.group-weekly__table th { border-color: #E8E8E8 !important; }
+.group-weekly__cell { padding: 3px 4px !important; }
+.group-weekly__more { font-size: 10px !important; color: #999 !important; padding-left: 10px; }
+
+
+/* ── 手帳のように「開かなくても読める」状態にする ──────────
+   省略記号で切ると、クリックしないと内容が分からない。
+   折り返して全文を見せ、セルは高さで伸びるに任せる。 */
+.group-weekly__event,
+.schedule-bar {
+  white-space: normal !important;
+  align-items: flex-start;
+}
+.group-weekly__event-title,
+.schedule-bar__title {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+  word-break: break-word;
+}
+/* チップと時刻は行頭に固定して、本文だけが折り返るようにする */
+.group-weekly__event-chip,
+.schedule-bar__chip { margin-top: 5px; }
+.group-weekly__event-time { line-height: 1.5; }
+
+/* 行が伸びても詰まって見えるように、余白は最小に保つ */
+.group-weekly__table td { vertical-align: top; }
+.group-weekly__cell { min-height: 46px; }
+
+
+/* ── 仕上げ ────────────────────────────────
+   繰り返しの印は識別チップより手前に出ると、色より先に目に入ってしまう。
+   チップ→時刻→本文の順に読ませ、印は控えめにする。 */
+.group-weekly__event--recurring::before {
+  order: 1;
+  color: #B0B0B0 !important;
+  font-size: 9px !important;
+  margin-top: 3px;
+}
+.group-weekly__event-chip { order: 0; }
+.group-weekly__event-time { order: 2; }
+.group-weekly__event-title { order: 3; }
+
+/* 行ラベルは行の先頭に揃える。予定が増えて行が伸びても位置が動かない */
+.group-weekly__member-cell,
+.group-weekly__org-label,
+.group-weekly__span-label { vertical-align: top; padding-top: 6px; }
+
+/* 期間バーの行は本文行と地続きに見せる。区切りが強いと帯が浮く */
+.group-weekly__span-row td { border-top: none !important; }
+
+
+/* ── 時刻を明示する ─────────────────────────
+   時刻は「いつからいつまで」が読めないと予定として機能しない。
+   1行目に独立させ、本文より先に目に入る濃さにする。 */
+.group-weekly__event { flex-direction: column; gap: 0 !important; }
+.group-weekly__event-time {
+  order: 0 !important;
+  width: 100%;
+  font-size: 11px !important;
+  font-weight: 600;
+  color: #444 !important;
+  letter-spacing: 0.2px;
+  margin-top: 0 !important;
+  line-height: 1.4;
+}
+.group-weekly__event-body {
+  order: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+}
+.group-weekly__event-chip { margin-top: 5px !important; }
+.group-weekly__event--recurring::before { order: 0; margin-top: 0; }
+
+
+/* ── 種別バッジ ─────────────────────────
+   色だけでは何の予定か伝わらない。種別名を白文字で載せる。
+   丸い点より、名前を持つ四角のほうが一覧で意味が取れる。 */
+.group-weekly__badge {
+  flex: 0 0 auto;
+  background: #0099CC;
+  color: #fff;
+  font-size: 9.5px;
+  line-height: 13px;
+  padding: 0 4px;
+  border-radius: 2px;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+/* 予定はセル幅いっぱいの帯にする。内側に余白があると付箋が散らばって見える */
+.group-weekly__event {
+  padding: 2px 3px !important;
+  margin: 0 0 1px 0 !important;
+  border-radius: 2px !important;
+}
+.group-weekly__cell { padding: 2px !important; }
+/* 時刻は太字にしない。太らせると本文より先に目に入って読みにくい */
+.group-weekly__event-time { font-weight: 400 !important; color: #333 !important; font-size: 11px !important; }
+.group-weekly__event-body { gap: 3px; }
+
+
+/* 繰り返しの印はタイトルの末尾に小さく添える。
+   行として独立させると、予定が1行増えたように見えてしまう */
+.group-weekly__repeat {
+  margin-left: 3px;
+  font-size: 9px;
+  color: #AAA;
+}
+
+/* 休日名はヘッダの日付の下に小さく添える。
+   セル本体は予定と工程のために空けておく */
+.group-weekly__holiday {
+  font-size: 10px;
+  font-weight: 400;
+  color: #C0392B;
+  line-height: 1.3;
+  margin-top: 1px;
+}
